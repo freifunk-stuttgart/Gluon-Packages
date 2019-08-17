@@ -1,0 +1,13 @@
+#!/usr/bin/lua
+
+local uci = require('simple-uci').cursor()
+	
+uci:section('firewall', 'rule', 'wan_status', {
+	name =  'wan_status',
+	src = 'wan',
+	dest_port = '80',
+	proto = 'tcp',
+	target = 'ACCEPT',
+})
+
+uci:save('firewall')
