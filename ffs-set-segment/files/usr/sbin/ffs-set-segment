@@ -46,8 +46,9 @@ do
   if [ "$NEWDOMAIN" != "$OLDDOMAIN" ]; then
     uci set gluon.core.domain="$NEWDOMAIN"
     logger -t $ME "setting domain from $OLDDOMAIN to $NEWDOMAIN, this would reboot"
-    #gluon-reconfigure
-    #reboot
+    #gluon-reconfigure #off for safety
+    #uci commit gluon #lets not do this right now. might wear off flash memories and we can easily recover the information on the next reboot from DNS.
+    #reboot #this might not be needed. hoodselector just does uci commit gluon, see https://github.com/freifunk-gluon/gluon/blob/fbb59cfd608a124ca893cc58117b0f87f7b29d97/package/gluon-hoodselector/luasrc/usr/lib/lua/hoodselector/util.lua#L71
   fi
 
   if [ "$NEWPEER" != "$OLDPEER" ]; then
