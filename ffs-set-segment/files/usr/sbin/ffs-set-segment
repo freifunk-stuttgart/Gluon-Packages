@@ -42,7 +42,6 @@ do
   OLDDOMAIN=$(uci get gluon.core.domain)
   NEWPEER=$(printf "\"gw%02ds%02d.gw.freifunk-stuttgart.de\" port %d" $i $GITSEG $PORT)
   NEWDOMAIN=$(printf "\"ffs_seg%02d\"" $GITSEG)
-  if [ "$NEWPEER" != "$OLDPEER" ]; then
   if [ "$NEWDOMAIN" != "$OLDDOMAIN" ]; then
     uci set gluon.core.domain="$NEWDOMAIN"
     logger -t $ME "setting domain from $OLDDOMAIN to $NEWDOMAIN, this would reboot"
