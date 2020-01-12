@@ -41,9 +41,9 @@ do
   OLDPEER=$(uci get fastd.mesh_vpn_backbone_peer_${GW}.remote)
   OLDDOMAIN=$(uci get gluon.core.domain)
   NEWPEER=$(printf "\"gw%02ds%02d.gw.freifunk-stuttgart.de\" port %d" $i $GITSEG $PORT)
-  NEWDOMAIN=$(printf "\"ffs_seg%02d\"" $GITSEG)
+  NEWDOMAIN=$(printf "ffs_seg%02d" $GITSEG)
   if [ "$NEWDOMAIN" != "$OLDDOMAIN" ]; then
-    uci set gluon.core.domain=$NEWDOMAIN
+    uci set gluon.core.domain="$NEWDOMAIN"
     logger -t $ME "setting domain from $OLDDOMAIN to $NEWDOMAIN, this would reboot"
     #gluon-reconfigure #off for safety
     #uci commit gluon #lets not do this right now. might wear off flash memories and we can easily recover the information on the next reboot from DNS.
