@@ -14,14 +14,16 @@ if [ "$(uci get fastd.mesh_vpn_backbone.auto_segment)" = "0" ]; then
   logger -t $ME "auto_segment disabled"
   exit 0
 fi
-if [ "$(cat /proc/uptime | cut -d'.' -f1)" -lt 60 ]; then
+
+BATSEG=$(batctl gwl | grep '02:00:3' | tail -1 | sed 's/:0/:/g' | cut -d':' -f4)
+
+if [ -z "$BATSEG" ] && [ "$(cat /proc/uptime | cut -d'.' -f1)" -lt 60 ]; then
   logger -t $ME "waiting for batman"
   exit 0
 fi
 
 NODEID=$(uci get network.bat0.macaddr | sed 's/://g')
 PUBKEY=$(/etc/init.d/fastd show_key mesh_vpn | cut -c1-12)
-BATSEG=$(batctl gwl | grep '02:00:3' | tail -1 | sed 's/:0/:/g' | cut -d':' -f4)
 GITSEG=$(nslookup ffs-${NODEID}-${PUBKEY}.segassign.freifunk-stuttgart.de ::1#54 | grep "2001:2:0:711::" | cut -d':' -f7)
 
 if [ -z "$GITSEG" ]; then
@@ -36,7 +38,6 @@ else
   if [ -n "$BATSEG" ] && [ "$BATSEG" != "$GITSEG" ]; then
     logger -t $ME "Avoiding Shortcut"
     GITSEG=99
-    rm $SEGSET
   fi
 fi
 
@@ -56,10 +57,15 @@ do
 done
 
 if [ "$CHANGED" = "1" ]; then
+  if [ "$GITSEG" = "99" ]; then
+    rm $SEGSET
+  else
+    echo $GITSEG >$SEGSET
+  fi
+
   /sbin/ifdown client
   /etc/init.d/fastd restart
   /sbin/ifup client
-  echo $GITSEG >$SEGSET
   logger -t $ME "Set Segment: $GITSEG"
 else
   logger -t $ME "No changes"
