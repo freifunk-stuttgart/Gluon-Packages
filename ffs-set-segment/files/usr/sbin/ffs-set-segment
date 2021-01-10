@@ -26,15 +26,17 @@ PUBKEY=$(/etc/init.d/fastd show_key mesh_vpn | cut -c1-12)
 DNSDOM="freifunk-stuttgart.de"
 DNSREQ="ffs-${NODEID}-${PUBKEY}.segassign.${DNSDOM}"
 
+LOOKUP_RESULT=$(gluon-wan nslookup ${DNSREQ} 2>&1)
 logger -t $ME "DNSv6 on ${DNSREQ} ..."
-GITSEG=$(nslookup ${DNSREQ} ::1#54 | grep "2001:2:0:711::" | cut -d':' -f7)
+GITSEG=$(echo "$LOOKUP_RESULT" | grep "2001:2:0:711::" | cut -d':' -f7)
 if [ -z "$GITSEG" ]; then
   logger -t $ME "DNSv4 on ${DNSREQ} ..."
-  GITSEG=$(nslookup ${DNSREQ} ::1#54 | grep "198.18.190." | cut -d'.' -f4)
+  GITSEG=$(echo "$LOOKUP_RESULT" | grep "198.18.190." | cut -d'.' -f4)
 fi
 
 if [ -z "$GITSEG" ]; then
-  logger -t $ME "DNS not working!"
+  logger -t $ME "DNS not working: $LOOKUP_RESULT"
+  logger -t $ME "DNS settings: $(cat /var/gluon/wan-dnsmasq/resolv.conf)"
   exit 1
 else
   if [ -n "$BATSEG" ] && [ "$BATSEG" != "$GITSEG" ]; then
